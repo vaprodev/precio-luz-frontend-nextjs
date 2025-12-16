@@ -50,13 +50,24 @@ frontend/src/components/
 - `precios.d.ts`: 6 interfaces TypeScript (HourlyPrice, PriceDataItem, etc.)
 - `precios.data.tsx`: Mock data con 24 horas + estadísticas (min, max, mean)
 
-### **Fase 3: Migración (30 min)**
+### **Fase 3: Migración (30 min)** ✅ COMPLETADO
 
-- [ ] Copiar archivos
-- [ ] Convertir JSX → TSX
-- [ ] Añadir 'use client' si necesario
-- [ ] Adaptar imports
-- [ ] Adaptar estilos (Tailwind)
+- [x] Copiar archivos desde Legacy → Project (5 archivos)
+- [x] Convertir JSX → TSX (todos los componentes)
+- [x] Añadir 'use client' si necesario → BarsColumn.tsx (usa Recharts)
+- [x] Adaptar imports → Alias `~` + tipos TypeScript
+- [x] Adaptar estilos (Tailwind) → Reemplazado Mantine Card
+- [x] Instalar dependencias → `npm install recharts`
+
+🎯 **Componentes migrados:**
+
+- `PriceChartView.tsx` - Componente principal (Server Component)
+- `BarsColumn.tsx` - Gráfico Recharts (Client Component)
+- `HourColumn.tsx` - Columna de horas (Server Component)
+- `PriceColumn.tsx` - Columna de precios (Server Component)
+- `logic.ts` - Funciones puras (toChartData, tierColor)
+
+✅ **Sin errores TypeScript** - Compilación exitosa
 
 ### **Fase 4: Testing (15 min)**
 
