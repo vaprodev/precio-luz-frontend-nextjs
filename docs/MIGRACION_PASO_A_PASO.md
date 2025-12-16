@@ -268,9 +268,65 @@ import BarsColumn from '~/components/precios/price-chart/BarsColumn';
 
 ---
 
-## 🎯 **PASO 6: ADAPTAR ESTILOS**
+## 🎯 **PASO 6: DECISIÓN - ¿Usar WidgetWrapper?**
 
-### **6.1 Si usa CSS Modules**
+### **6.1 ¿Qué es WidgetWrapper?**
+
+Es un contenedor que añade:
+
+- Padding vertical responsive
+- Container centrado con max-width
+- Fondo opcional (gris claro)
+- ID para anclas (#seccion)
+
+### **6.2 ¿Cuándo usarlo?**
+
+#### **❌ NO usar (tu caso - componente UI):**
+
+```tsx
+// src/components/precios/price-chart/PriceChartView.tsx
+'use client';
+
+// ❌ NO hacer esto
+import WidgetWrapper from '~/components/common/WidgetWrapper';
+
+export default function PriceChartView({ precios }) {
+  return (
+    // ❌ NO envolver en WidgetWrapper
+    <div className="w-full">{/* Tu gráfico */}</div>
+  );
+}
+```
+
+**Razón:** Es un componente **reutilizable**, no una sección completa.
+
+#### **✅ SÍ usar (para sección Homepage):**
+
+Si más adelante quieres crear un widget para la homepage:
+
+```tsx
+// src/components/widgets/PreciosHoy.tsx (NUEVO archivo)
+import WidgetWrapper from '~/components/common/WidgetWrapper';
+import Headline from '~/components/common/Headline';
+import PriceChartView from '~/components/precios/price-chart/PriceChartView';
+
+export default function PreciosHoy({ data }) {
+  return (
+    <WidgetWrapper id="precios" hasBackground={true}>
+      <Headline title="Precio de la Luz Hoy" subtitle="Consulta el precio hora a hora" />
+      <PriceChartView precios={data.precios} />
+    </WidgetWrapper>
+  );
+}
+```
+
+**Recomendación:** Empieza SIN WidgetWrapper. Si lo necesitas, créalo después.
+
+---
+
+## 🎯 **PASO 7: ADAPTAR ESTILOS**
+
+### **7.1 Si usa CSS Modules**
 
 ```tsx
 // ❌ ANTES
@@ -281,7 +337,7 @@ import styles from './PriceChart.module.css';
 <div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
 ```
 
-### **6.2 Si usa Mantine**
+### **7.2 Si usa Mantine**
 
 ```tsx
 // ❌ ANTES (Mantine)
@@ -308,7 +364,7 @@ import { Group, Stack, Text } from '@mantine/core';
 
 ---
 
-## 🎯 **PASO 7: ADAPTAR LÓGICA (logic.ts)**
+## 🎯 **PASO 8: ADAPTAR LÓGICA (logic.ts)**
 
 ### **7.1 Añadir tipos a funciones**
 
@@ -346,7 +402,7 @@ export function obtenerColor(precio: number, precioMedio: number): 'green' | 'ye
 
 ---
 
-## 🎯 **PASO 8: CREAR DATOS DE PRUEBA**
+## 🎯 **PASO 9: CREAR DATOS DE PRUEBA**
 
 ### **8.1 Crear archivo de mock data**
 
@@ -385,7 +441,7 @@ export const preciosMock: PrecioHora[] = [
 
 ---
 
-## 🎯 **PASO 9: CREAR PÁGINA DE PRUEBA**
+## 🎯 **PASO 10: CREAR PÁGINA DE PRUEBA**
 
 ### **9.1 Crear página en app/**
 
@@ -424,7 +480,7 @@ export default function TestGraficoPage() {
 
 ---
 
-## 🎯 **PASO 10: PROBAR EN DESARROLLO**
+## 🎯 **PASO 11: PROBAR EN DESARROLLO**
 
 ### **10.1 Iniciar servidor**
 
@@ -450,7 +506,7 @@ http://localhost:3001/test-grafico
 
 ---
 
-## 🎯 **PASO 11: FIX ERRORES COMUNES**
+## 🎯 **PASO 12: FIX ERRORES COMUNES**
 
 ### **Error 1: "Cannot find module"**
 
@@ -530,7 +586,7 @@ import '~/assets/styles/base.css'; // ← Debe estar
 
 ---
 
-## 🎯 **PASO 12: HACER COMMIT**
+## 🎯 **PASO 13: HACER COMMIT**
 
 ### **12.1 Ver cambios**
 
@@ -572,7 +628,7 @@ git push origin feat/migrate-from-react
 
 ---
 
-## 📊 **PASO 13: DOCUMENTAR APRENDIZAJES**
+## 📊 **PASO 14: DOCUMENTAR APRENDIZAJES**
 
 Crea un archivo para registrar lo que aprendiste:
 
