@@ -268,59 +268,151 @@ import BarsColumn from '~/components/precios/price-chart/BarsColumn';
 
 ---
 
-## 🎯 **PASO 6: DECISIÓN - ¿Usar WidgetWrapper?**
+## 🎯 **PASO 6: CREAR WIDGET CON WidgetWrapper**
 
-### **6.1 ¿Qué es WidgetWrapper?**
+### **6.1 ¿Por qué crear un Widget?**
 
-Es un contenedor que añade:
+Como quieres el gráfico como **sección en la homepage**, necesitas crear un **Widget** que envuelva tu componente PriceChart.
 
-- Padding vertical responsive
-- Container centrado con max-width
-- Fondo opcional (gris claro)
-- ID para anclas (#seccion)
+**Estructura:**
 
-### **6.2 ¿Cuándo usarlo?**
-
-#### **❌ NO usar (tu caso - componente UI):**
-
-```tsx
-// src/components/precios/price-chart/PriceChartView.tsx
-'use client';
-
-// ❌ NO hacer esto
-import WidgetWrapper from '~/components/common/WidgetWrapper';
-
-export default function PriceChartView({ precios }) {
-  return (
-    // ❌ NO envolver en WidgetWrapper
-    <div className="w-full">{/* Tu gráfico */}</div>
-  );
-}
+```
+PriceChartView (componente UI)
+    ↓
+PreciosHoy (Widget con WidgetWrapper)
+    ↓
+Homepage (app/page.tsx)
 ```
 
-**Razón:** Es un componente **reutilizable**, no una sección completa.
+### **6.2 Crear el Widget PreciosHoy**
 
-#### **✅ SÍ usar (para sección Homepage):**
-
-Si más adelante quieres crear un widget para la homepage:
+```bash
+# Crear el archivo
+touch src/components/widgets/PreciosHoy.tsx
+```
 
 ```tsx
-// src/components/widgets/PreciosHoy.tsx (NUEVO archivo)
+// src/components/widgets/PreciosHoy.tsx
+'use client';
+
 import WidgetWrapper from '~/components/common/WidgetWrapper';
 import Headline from '~/components/common/Headline';
 import PriceChartView from '~/components/precios/price-chart/PriceChartView';
+import type { PreciosHoyProps } from '~/shared/types';
 
-export default function PreciosHoy({ data }) {
+export default function PreciosHoy({
+  id = 'precios',
+  hasBackground = true,
+  header,
+  precios,
+  ultimaActualizacion,
+}: PreciosHoyProps) {
   return (
-    <WidgetWrapper id="precios" hasBackground={true}>
-      <Headline title="Precio de la Luz Hoy" subtitle="Consulta el precio hora a hora" />
-      <PriceChartView precios={data.precios} />
+    <WidgetWrapper id={id} hasBackground={hasBackground} containerClass="max-w-6xl">
+      {/* Título de la sección */}
+      {header && <Headline header={header} containerClass="text-center mb-10" />}
+
+      {/* Contenedor del gráfico */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 md:p-8">
+        <PriceChartView precios={precios} />
+      </div>
+
+      {/* Footer opcional */}
+      {ultimaActualizacion && (
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Última actualización: {ultimaActualizacion}</p>
+        </div>
+      )}
     </WidgetWrapper>
   );
 }
 ```
 
-**Recomendación:** Empieza SIN WidgetWrapper. Si lo necesitas, créalo después.
+### **6.3 Añadir tipos en shared/types.d.ts**
+
+```tsx
+// src/shared/types.d.ts
+// Añadir después de "type Widget = { ... }"
+
+type PrecioHora = {
+  hora: string;
+  precio: number;
+  fecha?: string;
+};
+
+type PreciosHoyProps = Widget & {
+  header?: Header;
+  precios: PrecioHora[];
+  ultimaActualizacion?: string;
+};
+```
+
+### **6.4 Crear datos en home.data.tsx**
+
+```tsx
+// src/shared/data/pages/home.data.tsx
+// Añadir al final del archivo
+
+import type { PreciosHoyProps } from '../../types';
+
+// Datos mock del gráfico
+export const preciosHoyHome: PreciosHoyProps = {
+  id: 'precios-hoy',
+  hasBackground: true,
+  header: {
+    title: 'Precio de la Luz Hoy',
+    subtitle: 'Consulta el precio de la luz hora a hora y ahorra en tu factura',
+    tagline: 'Precios en Tiempo Real',
+  },
+  precios: [
+    { hora: '00:00', precio: 0.12456 },
+    { hora: '01:00', precio: 0.11234 },
+    { hora: '02:00', precio: 0.10987 },
+    { hora: '03:00', precio: 0.10123 },
+    { hora: '04:00', precio: 0.10567 },
+    { hora: '05:00', precio: 0.1189 },
+    { hora: '06:00', precio: 0.14567 },
+    { hora: '07:00', precio: 0.16789 },
+    { hora: '08:00', precio: 0.18234 },
+    { hora: '09:00', precio: 0.19876 },
+    { hora: '10:00', precio: 0.21234 },
+    { hora: '11:00', precio: 0.20987 },
+    { hora: '12:00', precio: 0.19876 },
+    { hora: '13:00', precio: 0.18234 },
+    { hora: '14:00', precio: 0.16789 },
+    { hora: '15:00', precio: 0.15432 },
+    { hora: '16:00', precio: 0.14567 },
+    { hora: '17:00', precio: 0.15678 },
+    { hora: '18:00', precio: 0.1789 },
+    { hora: '19:00', precio: 0.20123 },
+    { hora: '20:00', precio: 0.22456 },
+    { hora: '21:00', precio: 0.21234 },
+    { hora: '22:00', precio: 0.18976 },
+    { hora: '23:00', precio: 0.15432 },
+  ],
+  ultimaActualizacion: '16/12/2025 20:30',
+};
+```
+
+### **6.5 Añadir a la Homepage**
+
+```tsx
+// app/page.tsx
+import PreciosHoy from '~/components/widgets/PreciosHoy';
+import { preciosHoyHome } from '~/shared/data/pages/home.data';
+
+export default function HomePage() {
+  return (
+    <>
+      {/* ... otros widgets (Hero, Features, etc) ... */}
+
+      <PreciosHoy {...preciosHoyHome} />
+
+      {/* ... más widgets ... */}
+    </>
+  );
+}
+```
 
 ---
 
