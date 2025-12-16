@@ -39,11 +39,16 @@ frontend/src/components/
 
 📄 **Resultado:** Ver `docs/ANALISIS_PRICE_CHART.md` para análisis completo
 
-### **Fase 2: Preparación (10 min)**
+### **Fase 2: Preparación (10 min)** ✅ COMPLETADO
 
-- [ ] Crear carpeta en Project
-- [ ] Crear tipos TypeScript
-- [ ] Preparar datos de prueba
+- [x] Crear carpeta en Project → `src/components/precios/price-chart/`
+- [x] Crear tipos TypeScript → `src/shared/types/precios.d.ts`
+- [x] Preparar datos de prueba → `src/shared/data/pages/precios.data.tsx`
+
+📦 **Archivos creados:**
+
+- `precios.d.ts`: 6 interfaces TypeScript (HourlyPrice, PriceDataItem, etc.)
+- `precios.data.tsx`: Mock data con 24 horas + estadísticas (min, max, mean)
 
 ### **Fase 3: Migración (30 min)**
 
