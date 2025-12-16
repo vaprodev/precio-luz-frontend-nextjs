@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.precioluzhoy.app';
 
+// Force dynamic rendering (no static export)
+export const dynamic = 'force-dynamic';
+
 /**
  * API Route Proxy para evitar CORS en desarrollo
  *

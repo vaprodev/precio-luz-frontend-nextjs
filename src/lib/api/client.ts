@@ -12,18 +12,31 @@ import type { FetchResult } from './types';
 // Determinar si estamos en desarrollo
 const isDev = process.env.NODE_ENV === 'development';
 
-// En desarrollo SIEMPRE usar proxy local para evitar CORS
-// En producción usar la URL configurada o proxy
-const API_BASE = isDev ? '/api' : process.env.NEXT_PUBLIC_API_URL || '/api';
+// Determinar si estamos en servidor (SSR) o cliente
+const isServer = typeof window === 'undefined';
 
 const HTTP_TIMEOUT_MS = 8000;
 const MAX_RETRIES = 3;
 
 /**
  * Get the base API URL
+ * En Server Components (SSR) necesitamos URL absoluta
+ * En Client Components podemos usar rutas relativas
  */
 export function getBaseUrl(): string {
-  return API_BASE;
+  // En servidor (SSR/SSG), usar URL absoluta para fetch interno
+  if (isServer) {
+    // En desarrollo, usar localhost con el puerto actual
+    if (isDev) {
+      const port = process.env.PORT || '3000';
+      return `http://localhost:${port}/api`;
+    }
+    // En producción, usar la URL pública o proxy
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  }
+
+  // En cliente, siempre usar rutas relativas (mejor para CORS y CDN)
+  return '/api';
 }
 
 /**
