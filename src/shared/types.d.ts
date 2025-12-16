@@ -1,11 +1,24 @@
 import { StaticImageData } from 'next/image';
 import { ReactElement } from 'react';
-import type { TablerIcon } from "@tabler/icons-react"
+import type { TablerIcon } from '@tabler/icons-react';
 
 type Widget = {
   id?: string;
   /** Does it have a background? */
   hasBackground?: boolean;
+};
+
+// Types for electricity prices component
+type HourlyPrice = {
+  hora: string;
+  precio: number;
+  fecha?: string;
+};
+
+type ElectricityPricesProps = Widget & {
+  header?: Header;
+  prices: HourlyPrice[];
+  lastUpdate?: string;
 };
 
 type WrapperTagProps = Widget & {

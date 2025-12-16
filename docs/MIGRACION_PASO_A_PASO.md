@@ -139,14 +139,14 @@ touch src/shared/types/precios.d.ts
 ```tsx
 // src/shared/types/precios.d.ts
 
-export interface PrecioHora {
+export interface HourlyPrice {
   hora: string; // "00:00" - "23:00"
   precio: number; // 0.15234
   fecha?: string; // "2025-12-16"
 }
 
 export interface PriceChartProps {
-  precios: PrecioHora[];
+  prices: HourlyPrice[];
   horaSeleccionada?: string;
   onHourClick?: (hora: string) => void;
   mostrarTooltip?: boolean;
@@ -250,7 +250,7 @@ import { otro } from '~/lib/utils';
 
 ```tsx
 // ✅ Añadir al inicio
-import type { PrecioHora, PriceChartProps } from '~/shared/types/precios';
+import type { HourlyPrice, PriceChartProps } from '~/shared/types/precios';
 ```
 
 ### **5.3 Adaptar imports de componentes**
@@ -279,34 +279,34 @@ Como quieres el gráfico como **sección en la homepage**, necesitas crear un **
 ```
 PriceChartView (componente UI)
     ↓
-PreciosHoy (Widget con WidgetWrapper)
+ElectricityPrices (Widget con WidgetWrapper)
     ↓
 Homepage (app/page.tsx)
 ```
 
-### **6.2 Crear el Widget PreciosHoy**
+### **6.2 Crear el Widget ElectricityPrices**
 
 ```bash
 # Crear el archivo
-touch src/components/widgets/PreciosHoy.tsx
+touch src/components/widgets/ElectricityPrices.tsx
 ```
 
 ```tsx
-// src/components/widgets/PreciosHoy.tsx
+// src/components/widgets/ElectricityPrices.tsx
 'use client';
 
 import WidgetWrapper from '~/components/common/WidgetWrapper';
 import Headline from '~/components/common/Headline';
 import PriceChartView from '~/components/precios/price-chart/PriceChartView';
-import type { PreciosHoyProps } from '~/shared/types';
+import type { ElectricityPricesProps } from '~/shared/types';
 
-export default function PreciosHoy({
+export default function ElectricityPrices({
   id = 'precios',
   hasBackground = true,
   header,
   precios,
-  ultimaActualizacion,
-}: PreciosHoyProps) {
+  lastUpdate,
+}: ElectricityPricesProps) {
   return (
     <WidgetWrapper id={id} hasBackground={hasBackground} containerClass="max-w-6xl">
       {/* Título de la sección */}
@@ -318,9 +318,9 @@ export default function PreciosHoy({
       </div>
 
       {/* Footer opcional */}
-      {ultimaActualizacion && (
+      {lastUpdate && (
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Última actualización: {ultimaActualizacion}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Última actualización: {lastUpdate}</p>
         </div>
       )}
     </WidgetWrapper>
@@ -334,16 +334,16 @@ export default function PreciosHoy({
 // src/shared/types.d.ts
 // Añadir después de "type Widget = { ... }"
 
-type PrecioHora = {
+type HourlyPrice = {
   hora: string;
   precio: number;
   fecha?: string;
 };
 
-type PreciosHoyProps = Widget & {
+type ElectricityPricesProps = Widget & {
   header?: Header;
-  precios: PrecioHora[];
-  ultimaActualizacion?: string;
+  prices: HourlyPrice[];
+  lastUpdate?: string;
 };
 ```
 
@@ -353,10 +353,10 @@ type PreciosHoyProps = Widget & {
 // src/shared/data/pages/home.data.tsx
 // Añadir al final del archivo
 
-import type { PreciosHoyProps } from '../../types';
+import type { ElectricityPricesProps } from '../../types';
 
 // Datos mock del gráfico
-export const preciosHoyHome: PreciosHoyProps = {
+export const electricityPricesHome: ElectricityPricesProps = {
   id: 'precios-hoy',
   hasBackground: true,
   header: {
@@ -364,7 +364,7 @@ export const preciosHoyHome: PreciosHoyProps = {
     subtitle: 'Consulta el precio de la luz hora a hora y ahorra en tu factura',
     tagline: 'Precios en Tiempo Real',
   },
-  precios: [
+  prices: [
     { hora: '00:00', precio: 0.12456 },
     { hora: '01:00', precio: 0.11234 },
     { hora: '02:00', precio: 0.10987 },
@@ -390,7 +390,7 @@ export const preciosHoyHome: PreciosHoyProps = {
     { hora: '22:00', precio: 0.18976 },
     { hora: '23:00', precio: 0.15432 },
   ],
-  ultimaActualizacion: '16/12/2025 20:30',
+  lastUpdate: '16/12/2025 20:30',
 };
 ```
 
@@ -398,15 +398,15 @@ export const preciosHoyHome: PreciosHoyProps = {
 
 ```tsx
 // app/page.tsx
-import PreciosHoy from '~/components/widgets/PreciosHoy';
-import { preciosHoyHome } from '~/shared/data/pages/home.data';
+import ElectricityPrices from '~/components/widgets/ElectricityPrices';
+import { electricityPricesHome } from '~/shared/data/pages/home.data';
 
 export default function HomePage() {
   return (
     <>
       {/* ... otros widgets (Hero, Features, etc) ... */}
 
-      <PreciosHoy {...preciosHoyHome} />
+      <ElectricityPrices {...electricityPricesHome} />
 
       {/* ... más widgets ... */}
     </>
@@ -463,7 +463,7 @@ import { Group, Stack, Text } from '@mantine/core';
 ```tsx
 // src/components/precios/price-chart/logic.ts
 
-import type { PrecioHora } from '~/shared/types/precios';
+import type { HourlyPrice } from '~/shared/types/precios';
 
 // ❌ ANTES
 export function calcularAltura(precio, precios) {
@@ -472,7 +472,7 @@ export function calcularAltura(precio, precios) {
 }
 
 // ✅ DESPUÉS
-export function calcularAltura(precio: number, precios: PrecioHora[]): number {
+export function calcularAltura(precio: number, prices: HourlyPrice[]): number {
   const max = Math.max(...precios.map((p) => p.precio));
   return (precio / max) * 100;
 }
@@ -501,9 +501,9 @@ export function obtenerColor(precio: number, precioMedio: number): 'green' | 'ye
 ```tsx
 // src/shared/data/pages/precios.data.tsx
 
-import type { PrecioHora } from '~/shared/types/precios';
+import type { HourlyPrice } from '~/shared/types/precios';
 
-export const preciosMock: PrecioHora[] = [
+export const preciosMock: HourlyPrice[] = [
   { hora: '00:00', precio: 0.12456 },
   { hora: '01:00', precio: 0.11234 },
   { hora: '02:00', precio: 0.10987 },
@@ -651,9 +651,9 @@ function Barra({ dato }) {
 }
 
 // ✅ DESPUÉS
-import type { PrecioHora } from '~/shared/types/precios';
+import type { HourlyPrice } from '~/shared/types/precios';
 
-function Barra({ dato }: { dato: PrecioHora }) {
+function Barra({ dato }: { dato: HourlyPrice }) {
   return <div>{dato.precio}</div>;
 }
 ```
@@ -704,7 +704,7 @@ git commit -m "feat: migrate PriceChart component from Legacy
 
 - Migrated price-chart components (PriceChartView, BarsColumn, HourColumn, PriceColumn)
 - Converted JSX to TSX with TypeScript types
-- Added precios.d.ts with PrecioHora and PriceChartProps types
+- Added precios.d.ts with HourlyPrice and PriceChartProps types
 - Created mock data for testing
 - Added test page at /test-grafico
 - Adapted Mantine styles to Tailwind CSS
