@@ -2,11 +2,20 @@
  * API Client Base
  * Fetch wrapper with retry logic, timeout, and exponential backoff
  * Ported from Legacy: src/features/prices/contracts.js + hooks.js
+ *
+ * IMPORTANTE: En desarrollo usa el proxy local (/api) para evitar CORS
+ * En producción puede usar la URL directa o el proxy según configuración
  */
 
 import type { FetchResult } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+// Determinar si estamos en desarrollo
+const isDev = process.env.NODE_ENV === 'development';
+
+// En desarrollo SIEMPRE usar proxy local para evitar CORS
+// En producción usar la URL configurada o proxy
+const API_BASE = isDev ? '/api' : process.env.NEXT_PUBLIC_API_URL || '/api';
+
 const HTTP_TIMEOUT_MS = 8000;
 const MAX_RETRIES = 3;
 
