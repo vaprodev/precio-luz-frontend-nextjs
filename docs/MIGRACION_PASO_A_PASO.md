@@ -111,6 +111,67 @@ frontend/src/components/
 
 ---
 
+### **Fase 6: API Layer - Integración con Backend Real** ✅ COMPLETADO
+
+- [x] Crear API client en `src/lib/api/client.ts`
+- [x] Crear servicios en `src/lib/api/precios-api.ts`
+- [x] Implementar métricas en `src/lib/precios/metrics.ts`
+- [x] Crear date utilities en `src/lib/precios/date-utils.ts`
+- [x] Crear formatters en `src/lib/precios/formatters.ts`
+- [x] Página de testing con API real `/test-grafico`
+- [x] Commit y push
+
+🎯 **API Layer completa:**
+
+- client.ts: Fetch con retry, timeout, AbortController
+- precios-api.ts: getPricesToday(), getPricesByDate(), getPricesTomorrow()
+- metrics.ts: Cálculo de min/max/mean, best2h, bestWindow
+- date-utils.ts: Manejo timezone Europe/Madrid con dayjs
+- formatters.ts: Formato español de precios y fechas
+
+---
+
+### **Fase 7: Real Data Integration** ✅ COMPLETADO
+
+- [x] Resolver CORS con API Route proxy
+- [x] Actualizar ElectricityPrices widget con datos reales
+- [x] Implementar usePriceData hook con polling
+- [x] Skeleton y error states
+- [x] Stats cards y best 2h window
+- [x] Testing completo
+- [x] Commit y push
+
+🎯 **Integración completada:**
+
+- API proxy: `/api/prices` evita CORS
+- Hook usePriceData: Polling cada 5min para datos incompletos
+- Widget actualizado: Usa datos reales desde API
+- Estados: Loading skeleton, error con retry, success con datos
+- Performance: Primera carga ~1.1s, siguientes ~100-300ms
+
+---
+
+### **Fase 8: Páginas Dinámicas con URLs Específicas** ⏳ PENDIENTE
+
+- [ ] Crear slug-utils.ts con conversión URL ↔ fecha
+- [ ] Implementar página dinámica `app/precio-luz-[slug]/page.tsx`
+- [ ] Componente DateNavigator para navegación
+- [ ] generateStaticParams para pre-renderizado
+- [ ] generateMetadata para SEO dinámico
+- [ ] Testing de URLs: hoy, mañana, histórico
+
+📌 **URLs definidas:**
+
+- `/precio-luz-hoy-DD-MM-YYYY` - Precio de hoy
+- `/precio-luz-manana-DD-MM-YYYY` - Precio de mañana
+- `/precio-luz-DD-MM-YYYY` - Precios históricos
+
+🔥 **CAMBIO IMPORTANTE:** En Legacy no usábamos URLs dinámicas, siempre era la misma URL. En Next.js cada día tiene su propia URL para mejor SEO.
+
+Ver detalles completos en la sección **FASE 8** más abajo en este documento.
+
+---
+
 ## 🎯 **PASO 1: ANÁLISIS DEL COMPONENTE LEGACY**
 
 ### **1.1 Leer el código fuente**
@@ -806,6 +867,228 @@ Crea un archivo para registrar lo que aprendiste:
 2. **Best2hCard** (mejor franja de 2 horas)
 3. **MinPriceCard** (tarjeta de precio mínimo)
 4. **ConsumptionCalculator** (calculadora de consumo)
+
+---
+
+## 🌐 **FASE 8: PÁGINAS DINÁMICAS CON URLs ESPECÍFICAS**
+
+### **📌 Contexto: Cambio importante respecto a Legacy**
+
+**En la aplicación Legacy (React + Vite):**
+
+- ❌ **NO usábamos URLs dinámicas**
+- ❌ Siempre era la misma URL: `precioluzhoy.app`
+- ❌ Sin rutas para días específicos
+- ❌ Sin SEO optimizado por fecha
+
+**En la nueva aplicación (Next.js):**
+
+- ✅ **SÍ usamos URLs dinámicas con fechas**
+- ✅ Cada día tiene su propia URL única
+- ✅ SEO optimizado para cada fecha
+- ✅ Pre-renderizado estático de páginas
+- ✅ ISR (Incremental Static Regeneration)
+
+---
+
+### **🎯 Estructura de URLs definida**
+
+#### **URL para HOY:**
+
+```
+/precio-luz-hoy-DD-MM-YYYY
+
+Ejemplos:
+- /precio-luz-hoy-16-12-2025
+- /precio-luz-hoy-25-12-2025
+- /precio-luz-hoy-31-12-2025
+```
+
+**Características:**
+
+- ✅ Incluye prefijo `hoy` para claridad
+- ✅ Fecha en formato español (DD-MM-YYYY)
+- ✅ SEO-friendly para búsquedas de "precio luz hoy"
+
+---
+
+#### **URL para MAÑANA:**
+
+```
+/precio-luz-manana-DD-MM-YYYY
+
+Ejemplos:
+- /precio-luz-manana-17-12-2025
+- /precio-luz-manana-26-12-2025
+- /precio-luz-manana-01-01-2026
+```
+
+**Características:**
+
+- ✅ Incluye prefijo `manana` para diferenciación
+- ✅ Fecha en formato español (DD-MM-YYYY)
+- ✅ SEO-friendly para búsquedas de "precio luz mañana"
+
+---
+
+#### **URL para DÍAS ANTERIORES (histórico):**
+
+```
+/precio-luz-DD-MM-YYYY
+
+Ejemplos:
+- /precio-luz-15-12-2025
+- /precio-luz-10-12-2025
+- /precio-luz-01-12-2025
+```
+
+**Características:**
+
+- ✅ Sin prefijo (más limpio para histórico)
+- ✅ Fecha en formato español (DD-MM-YYYY)
+- ✅ SEO-friendly para búsquedas de fechas específicas
+
+---
+
+### **📋 Checklist Fase 8**
+
+#### **Paso 8.1: Crear utilidades de slug**
+
+- [ ] Crear `src/lib/precios/slug-utils.ts`
+- [ ] Función `parseSlugToDate()` - Parsear slug → fecha ISO
+- [ ] Función `createSlugFromDate()` - Fecha ISO → slug
+- [ ] Función `getTodaySlug()` - Obtener slug de hoy
+- [ ] Función `getTomorrowSlug()` - Obtener slug de mañana
+- [ ] Manejo de timezone Europe/Madrid con dayjs
+
+#### **Paso 8.2: Crear página dinámica con [slug]**
+
+- [ ] Crear `app/precio-luz-[slug]/page.tsx`
+- [ ] Implementar `generateStaticParams()` - Pre-renderizar hoy, mañana, últimos 7 días
+- [ ] Implementar `generateMetadata()` - SEO dinámico por fecha
+- [ ] Fetch de datos desde API con `getPricesByDate()`
+- [ ] Renderizar PriceChartView con datos reales
+- [ ] Configurar ISR con `revalidate: 300` (5 minutos)
+
+#### **Paso 8.3: Componente de navegación entre fechas**
+
+- [ ] Crear `src/components/precios/DateNavigator.tsx`
+- [ ] Botones prev/next para navegar entre días
+- [ ] Indicador visual de día actual (hoy/mañana/histórico)
+- [ ] Deshabilitar navegación más allá de mañana
+- [ ] Client Component con useRouter
+
+#### **Paso 8.4: Metadata dinámica y SEO**
+
+- [ ] Title dinámico: "Precio de la Luz Hoy 16-12-2025"
+- [ ] Description dinámica con estadísticas del día
+- [ ] Open Graph tags por fecha
+- [ ] Canonical URLs correctas
+
+#### **Paso 8.5: Testing y validación**
+
+- [ ] Probar URL hoy: `/precio-luz-hoy-16-12-2025`
+- [ ] Probar URL mañana: `/precio-luz-manana-17-12-2025`
+- [ ] Probar URL histórico: `/precio-luz-15-12-2025`
+- [ ] Verificar navegación prev/next funciona
+- [ ] Validar SEO tags en cada tipo de página
+- [ ] Build de producción sin errores
+
+---
+
+### **🔧 Implementación técnica**
+
+#### **Estructura de archivos:**
+
+```
+app/
+└── precio-luz-[slug]/
+    └── page.tsx                    # Página dinámica
+
+src/
+├── lib/
+│   └── precios/
+│       ├── slug-utils.ts           # Conversión slug ↔ fecha
+│       └── date-utils.ts           # Ya existe
+└── components/
+    └── precios/
+        └── DateNavigator.tsx       # Navegación entre fechas
+```
+
+#### **Tipos TypeScript:**
+
+```typescript
+// src/lib/precios/slug-utils.ts
+
+export type SlugType = 'hoy' | 'manana' | 'pasado';
+
+export interface ParsedSlug {
+  type: SlugType;
+  dateIso: string; // "2025-12-16"
+  dateDisplay: string; // "16-12-2025"
+  slug: string; // "precio-luz-hoy-16-12-2025"
+}
+```
+
+#### **Patrones de URL (Regex):**
+
+```typescript
+// Detectar tipo de URL
+const HOY_PATTERN = /^precio-luz-hoy-(\d{2})-(\d{2})-(\d{4})$/;
+const MANANA_PATTERN = /^precio-luz-manana-(\d{2})-(\d{2})-(\d{4})$/;
+const HISTORICO_PATTERN = /^precio-luz-(\d{2})-(\d{2})-(\d{4})$/;
+```
+
+---
+
+### **🎯 Beneficios de esta arquitectura**
+
+✅ **SEO mejorado:**
+
+- Cada día tiene URL única indexable
+- Metadata específica por fecha
+- Mejor posicionamiento en búsquedas
+
+✅ **Performance:**
+
+- Pre-renderizado estático de páginas populares
+- ISR para actualizar datos sin rebuild
+- Cacheo agresivo en CDN
+
+✅ **UX superior:**
+
+- URLs descriptivas y memorables
+- Navegación intuitiva entre días
+- Compartir URLs de fechas específicas
+
+✅ **Escalabilidad:**
+
+- generateStaticParams crea páginas bajo demanda
+- No límite de fechas históricas
+- Mantenimiento automático
+
+---
+
+### **📝 Notas importantes**
+
+**Timezone:** Todas las fechas en **Europe/Madrid** (CET/CEST)
+**Formato API:** Backend espera `YYYY-MM-DD`, conversión automática
+**Caché:** 5 minutos de revalidación en producción
+**Build time:** Solo pre-renderizar hoy + mañana + últimos 7 días
+**On-demand:** Fechas antiguas se generan cuando se visitan
+
+---
+
+### **🚀 Próximo paso después de Fase 8**
+
+Una vez completada la Fase 8, tendremos:
+
+- ✅ Componente PriceChart funcional
+- ✅ API layer con datos reales
+- ✅ Páginas dinámicas con URLs específicas
+- ✅ Navegación entre fechas
+
+**Siguiente:** Fase 9 - Blog posts y contenido SEO automatizado
 
 ---
 
