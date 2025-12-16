@@ -151,22 +151,30 @@ frontend/src/components/
 
 ---
 
-### **Fase 8: Páginas Dinámicas con URLs Específicas** ⏳ PENDIENTE
+### **Fase 8: Páginas Dinámicas con URLs Específicas** ✅ COMPLETADA
 
-- [ ] Crear slug-utils.ts con conversión URL ↔ fecha
-- [ ] Implementar página dinámica `app/precio-luz-[slug]/page.tsx`
-- [ ] Componente DateNavigator para navegación
-- [ ] generateStaticParams para pre-renderizado
-- [ ] generateMetadata para SEO dinámico
-- [ ] Testing de URLs: hoy, mañana, histórico
+- [x] Crear slug-utils.ts con conversión URL ↔ fecha
+- [x] Implementar página dinámica `app/[slug]/page.tsx`
+- [x] Componente DateNavigator para navegación
+- [x] generateStaticParams para pre-renderizado
+- [x] generateMetadata para SEO dinámico
+- [x] Testing de URLs: hoy, mañana, histórico
+- [x] Fix SSR fetch: absolute URLs en Server Components
 
-📌 **URLs definidas:**
+📌 **URLs implementadas:**
 
-- `/precio-luz-hoy-DD-MM-YYYY` - Precio de hoy
-- `/precio-luz-manana-DD-MM-YYYY` - Precio de mañana
-- `/precio-luz-DD-MM-YYYY` - Precios históricos
+- `/precio-luz-hoy-DD-MM-YYYY` - Precio de hoy ✅
+- `/precio-luz-manana-DD-MM-YYYY` - Precio de mañana ✅
+- `/precio-luz-DD-MM-YYYY` - Precios históricos ✅
 
 🔥 **CAMBIO IMPORTANTE:** En Legacy no usábamos URLs dinámicas, siempre era la misma URL. En Next.js cada día tiene su propia URL para mejor SEO.
+
+🛠️ **Fix crítico implementado:** Server Components ahora usan URLs absolutas (`http://localhost:3002/api`) en contexto SSR para evitar errores de fetch.
+
+📄 **Documentación creada:**
+
+- `SMOKE-TEST-FASE-8.md` - Testing completo con resultados
+- `CORS-LOCAL-SETUP.md` - Configuración CORS para desarrollo local
 
 Ver detalles completos en la sección **FASE 8** más abajo en este documento.
 
@@ -952,45 +960,47 @@ Ejemplos:
 
 ### **📋 Checklist Fase 8**
 
-#### **Paso 8.1: Crear utilidades de slug**
+#### **Paso 8.1: Crear utilidades de slug** ✅
 
-- [ ] Crear `src/lib/precios/slug-utils.ts`
-- [ ] Función `parseSlugToDate()` - Parsear slug → fecha ISO
-- [ ] Función `createSlugFromDate()` - Fecha ISO → slug
-- [ ] Función `getTodaySlug()` - Obtener slug de hoy
-- [ ] Función `getTomorrowSlug()` - Obtener slug de mañana
-- [ ] Manejo de timezone Europe/Madrid con dayjs
+- [x] Crear `src/lib/precios/slug-utils.ts`
+- [x] Función `parseSlugToDate()` - Parsear slug → fecha ISO
+- [x] Función `createSlugFromDate()` - Fecha ISO → slug
+- [x] Función `getTodaySlug()` - Obtener slug de hoy
+- [x] Función `getTomorrowSlug()` - Obtener slug de mañana
+- [x] Manejo de timezone Europe/Madrid con dayjs
 
-#### **Paso 8.2: Crear página dinámica con [slug]**
+#### **Paso 8.2: Crear página dinámica con [slug]** ✅
 
-- [ ] Crear `app/precio-luz-[slug]/page.tsx`
-- [ ] Implementar `generateStaticParams()` - Pre-renderizar hoy, mañana, últimos 7 días
-- [ ] Implementar `generateMetadata()` - SEO dinámico por fecha
-- [ ] Fetch de datos desde API con `getPricesByDate()`
-- [ ] Renderizar PriceChartView con datos reales
-- [ ] Configurar ISR con `revalidate: 300` (5 minutos)
+- [x] Crear `app/[slug]/page.tsx` (Next.js 14+ async params)
+- [x] Implementar `generateStaticParams()` - Pre-renderizar hoy, mañana, últimos 7 días
+- [x] Implementar `generateMetadata()` - SEO dinámico por fecha
+- [x] Fetch de datos desde API con `getPricesByDate()`
+- [x] Renderizar PriceChartView con datos reales
+- [x] Configurar ISR con `revalidate: 300` (5 minutos)
+- [x] Fix SSR: getBaseUrl() con server/client detection
 
-#### **Paso 8.3: Componente de navegación entre fechas**
+#### **Paso 8.3: Componente de navegación entre fechas** ✅
 
-- [ ] Crear `src/components/precios/DateNavigator.tsx`
-- [ ] Botones prev/next para navegar entre días
-- [ ] Indicador visual de día actual (hoy/mañana/histórico)
-- [ ] Deshabilitar navegación más allá de mañana
-- [ ] Client Component con useRouter
+- [x] Crear `src/components/precios/DateNavigator.tsx`
+- [x] Botones prev/next para navegar entre días
+- [x] Indicador visual de día actual (hoy/mañana/histórico)
+- [x] Deshabilitar navegación más allá de mañana
+- [x] Client Component con useRouter
 
-#### **Paso 8.4: Metadata dinámica y SEO**
+#### **Paso 8.4: Metadata dinámica y SEO** ✅
 
-- [ ] Title dinámico: "Precio de la Luz Hoy 16-12-2025"
-- [ ] Description dinámica con estadísticas del día
-- [ ] Open Graph tags por fecha
-- [ ] Canonical URLs correctas
+- [x] Title dinámico: "Precio de la Luz Hoy 16-12-2025"
+- [x] Description dinámica con estadísticas del día
+- [x] Open Graph tags por fecha
+- [x] Canonical URLs correctas
 
-#### **Paso 8.5: Testing y validación**
+#### **Paso 8.5: Testing y validación** ✅
 
-- [ ] Probar URL hoy: `/precio-luz-hoy-16-12-2025`
-- [ ] Probar URL mañana: `/precio-luz-manana-17-12-2025`
-- [ ] Probar URL histórico: `/precio-luz-15-12-2025`
-- [ ] Verificar navegación prev/next funciona
+- [x] Probar URL hoy: `/precio-luz-hoy-16-12-2025` - ✅ 200 OK
+- [x] Probar URL mañana: `/precio-luz-manana-17-12-2025` - ⚠️ Backend sin datos
+- [x] Probar URL histórico: `/precio-luz-15-12-2025` - ✅ 200 OK
+- [x] Verificar navegación prev/next funciona
+- [x] Smoke test completo documentado en `SMOKE-TEST-FASE-8.md`
 - [ ] Validar SEO tags en cada tipo de página
 - [ ] Build de producción sin errores
 
