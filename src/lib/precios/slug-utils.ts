@@ -2,10 +2,11 @@
  * URL Slug Utilities
  * Convertir entre formatos de URL y fechas ISO
  *
- * Formato de URLs:
- * - /precio-luz-hoy-16-12-2025        → Hoy (con fecha explícita)
- * - /precio-luz-manana-17-12-2025     → Mañana (con fecha explícita)
- * - /precio-luz-15-12-2025            → Días anteriores
+ * Formato de URLs (NUEVO):
+ * - /precio-luz-16-diciembre-2025     → Cualquier día (sin prefijo hoy/mañana)
+ * - /precio-luz-17-diciembre-2025     → Mañana (detectado por fecha)
+ * - /precio-luz-25-diciembre-2025     → Navidad
+ * - /precio-luz-1-enero-2026          → Año nuevo
  */
 
 import dayjs from 'dayjs';
@@ -20,14 +21,50 @@ dayjs.locale('es');
 const TZ = 'Europe/Madrid';
 
 /**
- * Tipos de slug
+ * Mapa de nombres de meses en español (lowercase)
+ */
+const MESES_NOMBRES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+] as const;
+
+/**
+ * Mapa inverso: nombre del mes → número (1-12)
+ */
+const MESES_MAP: Record<string, number> = {
+  enero: 1,
+  febrero: 2,
+  marzo: 3,
+  abril: 4,
+  mayo: 5,
+  junio: 6,
+  julio: 7,
+  agosto: 8,
+  septiembre: 9,
+  octubre: 10,
+  noviembre: 11,
+  diciembre: 12,
+};
+
+/**
+ * Tipos de slug (basado en comparación de fechas)
  */
 export type SlugType = 'hoy' | 'manana' | 'pasado';
 
 export interface ParsedSlug {
   type: SlugType;
   dateIso: string; // YYYY-MM-DD
-  dateDisplay: string; // DD-MM-YYYY
+  dateDisplay: string; // DD de MMMM de YYYY (ej: "16 de diciembre de 2025")
   slug: string; // Original slug
 }
 
@@ -35,14 +72,14 @@ export interface ParsedSlug {
  * Parsear slug de URL a fecha ISO
  *
  * @example
- * parseSlugToDate('precio-luz-hoy-16-12-2025')
- *   → { type: 'hoy', dateIso: '2025-12-16', dateDisplay: '16-12-2025', slug: '...' }
+ * parseSlugToDate('precio-luz-16-diciembre-2025')
+ *   → { type: 'hoy', dateIso: '2025-12-16', dateDisplay: '16 de diciembre de 2025', slug: '...' }
  *
- * parseSlugToDate('precio-luz-manana-17-12-2025')
- *   → { type: 'manana', dateIso: '2025-12-17', dateDisplay: '17-12-2025', slug: '...' }
+ * parseSlugToDate('precio-luz-17-diciembre-2025')
+ *   → { type: 'manana', dateIso: '2025-12-17', dateDisplay: '17 de diciembre de 2025', slug: '...' }
  *
- * parseSlugToDate('precio-luz-15-12-2025')
- *   → { type: 'pasado', dateIso: '2025-12-15', dateDisplay: '15-12-2025', slug: '...' }
+ * parseSlugToDate('precio-luz-25-diciembre-2025')
+ *   → { type: 'pasado', dateIso: '2025-12-25', dateDisplay: '25 de diciembre de 2025', slug: '...' }
  */
 export function parseSlugToDate(slug: string): ParsedSlug | null {
   // Validate input
@@ -50,52 +87,54 @@ export function parseSlugToDate(slug: string): ParsedSlug | null {
     return null;
   }
 
-  // Formato: precio-luz-hoy-DD-MM-YYYY
-  const hoyMatch = slug.match(/^precio-luz-hoy-(\d{2})-(\d{2})-(\d{4})$/);
-  if (hoyMatch) {
-    const [, day, month, year] = hoyMatch;
-    const dateDisplay = `${day}-${month}-${year}`;
-    const dateIso = `${year}-${month}-${day}`;
+  // Formato: precio-luz-DD-MMMM-YYYY
+  // Ejemplo: precio-luz-16-diciembre-2025
+  const pattern =
+    /^precio-luz-(\d{1,2})-(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)-(\d{4})$/;
+  const match = slug.match(pattern);
 
-    return {
-      type: 'hoy',
-      dateIso,
-      dateDisplay,
-      slug,
-    };
+  if (!match) {
+    return null;
   }
 
-  // Formato: precio-luz-manana-DD-MM-YYYY
-  const mananaMatch = slug.match(/^precio-luz-manana-(\d{2})-(\d{2})-(\d{4})$/);
-  if (mananaMatch) {
-    const [, day, month, year] = mananaMatch;
-    const dateDisplay = `${day}-${month}-${year}`;
-    const dateIso = `${year}-${month}-${day}`;
+  const [, day, monthName, year] = match;
+  const monthNumber = MESES_MAP[monthName];
 
-    return {
-      type: 'manana',
-      dateIso,
-      dateDisplay,
-      slug,
-    };
+  if (!monthNumber) {
+    return null;
   }
 
-  // Formato: precio-luz-DD-MM-YYYY (días anteriores)
-  const pasadoMatch = slug.match(/^precio-luz-(\d{2})-(\d{2})-(\d{4})$/);
-  if (pasadoMatch) {
-    const [, day, month, year] = pasadoMatch;
-    const dateDisplay = `${day}-${month}-${year}`;
-    const dateIso = `${year}-${month}-${day}`;
+  // Pad day and month with zeros
+  const dayPadded = day.padStart(2, '0');
+  const monthPadded = monthNumber.toString().padStart(2, '0');
 
-    return {
-      type: 'pasado',
-      dateIso,
-      dateDisplay,
-      slug,
-    };
+  const dateIso = `${year}-${monthPadded}-${dayPadded}`;
+  const dateDisplay = `${day} de ${monthName} de ${year}`;
+
+  // Validar que la fecha sea válida
+  if (!isValidDate(dateIso)) {
+    return null;
   }
 
-  return null;
+  // Determinar tipo comparando con hoy y mañana
+  const today = dayjs().tz(TZ).format('YYYY-MM-DD');
+  const tomorrow = dayjs().tz(TZ).add(1, 'day').format('YYYY-MM-DD');
+
+  let type: SlugType;
+  if (dateIso === today) {
+    type = 'hoy';
+  } else if (dateIso === tomorrow) {
+    type = 'manana';
+  } else {
+    type = 'pasado';
+  }
+
+  return {
+    type,
+    dateIso,
+    dateDisplay,
+    slug,
+  };
 }
 
 /**
@@ -105,25 +144,19 @@ export function parseSlugToDate(slug: string): ParsedSlug | null {
  * @returns Slug para la URL
  *
  * @example
- * createSlugFromDate('2025-12-16')  → 'precio-luz-hoy-16-12-2025' (si es hoy)
- * createSlugFromDate('2025-12-17')  → 'precio-luz-manana-17-12-2025' (si es mañana)
- * createSlugFromDate('2025-12-15')  → 'precio-luz-15-12-2025' (si es pasado)
+ * createSlugFromDate('2025-12-16')  → 'precio-luz-16-diciembre-2025'
+ * createSlugFromDate('2025-12-25')  → 'precio-luz-25-diciembre-2025'
+ * createSlugFromDate('2026-01-01')  → 'precio-luz-1-enero-2026'
  */
 export function createSlugFromDate(dateIso: string): string {
-  const today = dayjs().tz(TZ).format('YYYY-MM-DD');
-  const tomorrow = dayjs().tz(TZ).add(1, 'day').format('YYYY-MM-DD');
-
-  // Convertir a formato DD-MM-YYYY
   const [year, month, day] = dateIso.split('-');
-  const dateDisplay = `${day}-${month}-${year}`;
+  const monthNumber = parseInt(month, 10);
+  const dayNumber = parseInt(day, 10);
 
-  if (dateIso === today) {
-    return `precio-luz-hoy-${dateDisplay}`;
-  } else if (dateIso === tomorrow) {
-    return `precio-luz-manana-${dateDisplay}`;
-  } else {
-    return `precio-luz-${dateDisplay}`;
-  }
+  // Obtener nombre del mes (0-indexed, por eso -1)
+  const monthName = MESES_NOMBRES[monthNumber - 1];
+
+  return `precio-luz-${dayNumber}-${monthName}-${year}`;
 }
 
 /**

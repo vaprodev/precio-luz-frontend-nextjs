@@ -1,8 +1,31 @@
 # 🧪 Smoke Test - FASE 8: Páginas Dinámicas
 
-**Fecha**: 16 diciembre 2025  
+**Fecha**: 17 diciembre 2025  
 **Puerto**: 3002 (whitelist)  
-**Objetivo**: Verificar funcionamiento de URLs dinámicas con formato español
+**Objetivo**: Verificar funcionamiento de URLs dinámicas con formato español (nombres de meses)  
+**Actualización**: Nuevo formato unificado sin prefijos hoy/mañana
+
+---
+
+## 📌 Nuevo Formato de URLs
+
+**Antes (obsoleto):**
+
+```
+/precio-luz-hoy-16-12-2025
+/precio-luz-manana-17-12-2025
+/precio-luz-15-12-2025
+```
+
+**Ahora (implementado):**
+
+```
+/precio-luz-16-diciembre-2025      (Hoy)
+/precio-luz-17-diciembre-2025      (Mañana)
+/precio-luz-15-diciembre-2025      (Histórico)
+/precio-luz-25-diciembre-2025      (Navidad)
+/precio-luz-1-enero-2026           (Año Nuevo)
+```
 
 ---
 
@@ -33,18 +56,18 @@ curl "http://localhost:3002/api/prices?date=2025-12-16"
 
 ### 3. Metadata Dinámicos
 
-- ✅ Title generado: "Precio de la Luz Hoy 16-12-2025 - Consulta por Hora"
+- ✅ Title generado: "Precio de la Luz 16 de diciembre de 2025 - Consulta por Hora"
 - ✅ Description personalizada por tipo de fecha
 - ✅ Open Graph tags correctos
 - ✅ Async params funcionando (Next.js 14+)
 
-### 4. Parsing de Slugs
+### 4. Parsing de Slugs (NUEVO FORMATO)
 
-- ✅ Formato HOY: `precio-luz-hoy-16-12-2025`
-- ✅ Formato MAÑANA: `precio-luz-manana-17-12-2025`
-- ✅ Formato PASADO: `precio-luz-15-12-2025`
+- ✅ Formato unificado: `precio-luz-DD-MMMM-YYYY`
+- ✅ Regex con nombres de meses: enero, febrero, marzo... diciembre
 - ✅ Conversión a ISO dates correcta
 - ✅ Validación de fechas funcional
+- ✅ Detección automática de tipo (hoy/mañana/pasado) por comparación de fechas
 
 ---
 

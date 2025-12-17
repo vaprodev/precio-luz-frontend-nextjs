@@ -160,14 +160,23 @@ frontend/src/components/
 - [x] generateMetadata para SEO dinámico
 - [x] Testing de URLs: hoy, mañana, histórico
 - [x] Fix SSR fetch: absolute URLs en Server Components
+- [x] **ACTUALIZACIÓN:** Nuevo formato con nombres de meses en español
 
-📌 **URLs implementadas:**
+📌 **URLs implementadas (NUEVO FORMATO):**
 
-- `/precio-luz-hoy-DD-MM-YYYY` - Precio de hoy ✅
-- `/precio-luz-manana-DD-MM-YYYY` - Precio de mañana ✅
-- `/precio-luz-DD-MM-YYYY` - Precios históricos ✅
+- `/precio-luz-16-diciembre-2025` - Precio de cualquier día (hoy detectado automáticamente) ✅
+- `/precio-luz-17-diciembre-2025` - Mañana (detectado por comparación de fechas) ✅
+- `/precio-luz-25-diciembre-2025` - Navidad (histórico o futuro) ✅
+- `/precio-luz-1-enero-2026` - Año nuevo ✅
 
-🔥 **CAMBIO IMPORTANTE:** En Legacy no usábamos URLs dinámicas, siempre era la misma URL. En Next.js cada día tiene su propia URL para mejor SEO.
+🔥 **MEJORAS del nuevo formato:**
+
+- ✅ **Más legible**: "16-diciembre-2025" vs "16-12-2025"
+- ✅ **Mejor SEO**: Google entiende "diciembre" mejor que "12"
+- ✅ **URLs consistentes**: Todas iguales (sin prefijo "hoy"/"mañana")
+- ✅ **Más profesional**: URLs descriptivas y en español natural
+
+💡 **Detección inteligente**: El tipo (hoy/mañana/pasado) se detecta comparando la fecha del slug con la fecha actual, no por la URL.
 
 🛠️ **Fix crítico implementado:** Server Components ahora usan URLs absolutas (`http://localhost:3002/api`) en contexto SSR para evitar errores de fetch.
 
@@ -899,58 +908,124 @@ Crea un archivo para registrar lo que aprendiste:
 
 ---
 
-### **🎯 Estructura de URLs definida**
+### **🎯 Estructura de URLs definida (ACTUALIZADO - Diciembre 2025)**
 
-#### **URL para HOY:**
+#### **Nuevo formato unificado con nombres de meses:**
 
 ```
-/precio-luz-hoy-DD-MM-YYYY
+/precio-luz-DD-MMMM-YYYY
 
-Ejemplos:
+Ejemplos reales:
+- /precio-luz-16-diciembre-2025    (Hoy - detectado automáticamente)
+- /precio-luz-17-diciembre-2025    (Mañana - detectado automáticamente)
+- /precio-luz-25-diciembre-2025    (Navidad)
+- /precio-luz-31-diciembre-2025    (Nochevieja)
+- /precio-luz-1-enero-2026         (Año Nuevo)
+- /precio-luz-6-enero-2026         (Reyes)
+```
+
+**Características del nuevo formato:**
+
+✅ **Más legible**: "diciembre" vs "12"  
+✅ **Mejor SEO**: Google entiende mejor los nombres de meses  
+✅ **URLs consistentes**: Todas iguales (sin prefijo hoy/mañana)  
+✅ **Español natural**: URLs más profesionales y descriptivas  
+✅ **Sin ambigüedad**: "1-enero" es más claro que "1-1" o "01-01"
+
+**Detección inteligente del tipo:**
+
+El tipo de día (HOY/MAÑANA/HISTÓRICO) se detecta **comparando la fecha del slug con la fecha actual** en timezone Europe/Madrid:
+
+```typescript
+if (fechaSlug === fechaHoy) → Badge "🟢 HOY"
+if (fechaSlug === fechaManana) → Badge "🔵 MAÑANA"
+else → Badge "📅 15 DIC 2025"
+```
+
+---
+
+### **❌ Formato ANTERIOR (obsoleto):**
+
+```
+Formato viejo (ya no usado):
 - /precio-luz-hoy-16-12-2025
-- /precio-luz-hoy-25-12-2025
-- /precio-luz-hoy-31-12-2025
-```
-
-**Características:**
-
-- ✅ Incluye prefijo `hoy` para claridad
-- ✅ Fecha en formato español (DD-MM-YYYY)
-- ✅ SEO-friendly para búsquedas de "precio luz hoy"
-
----
-
-#### **URL para MAÑANA:**
-
-```
-/precio-luz-manana-DD-MM-YYYY
-
-Ejemplos:
 - /precio-luz-manana-17-12-2025
-- /precio-luz-manana-26-12-2025
-- /precio-luz-manana-01-01-2026
+- /precio-luz-15-12-2025
 ```
 
-**Características:**
+**Por qué se cambió:**
 
-- ✅ Incluye prefijo `manana` para diferenciación
-- ✅ Fecha en formato español (DD-MM-YYYY)
-- ✅ SEO-friendly para búsquedas de "precio luz mañana"
+- ❌ Menos legible (mes en número)
+- ❌ Ambiguo para usuarios (¿16-12 o 12-16?)
+- ❌ Peor para SEO internacional
+- ❌ Prefijos "hoy"/"mañana" redundantes
 
 ---
 
-#### **URL para DÍAS ANTERIORES (histórico):**
+### **🛠️ Implementación técnica**
 
+#### **Regex pattern para parsing:**
+
+```typescript
+// Patrón: precio-luz-DD-MMMM-YYYY
+const pattern = /^precio-luz-(\d{1,2})-(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)-(\d{4})$/;
+
+// Ejemplos que coinciden:
+✅ "precio-luz-16-diciembre-2025"
+✅ "precio-luz-1-enero-2026"
+✅ "precio-luz-25-diciembre-2025"
+
+// Ejemplos que NO coinciden:
+❌ "precio-luz-hoy-16-12-2025"  (tiene "hoy")
+❌ "precio-luz-16-12-2025"       (mes en número)
+❌ "precio-luz-16-dic-2025"      (mes abreviado)
 ```
-/precio-luz-DD-MM-YYYY
 
-Ejemplos:
-- /precio-luz-15-12-2025
-- /precio-luz-10-12-2025
-- /precio-luz-01-12-2025
+#### **Mapa de meses:**
+
+```typescript
+const MESES_NOMBRES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+];
+
+const MESES_MAP: Record<string, number> = {
+  enero: 1,
+  febrero: 2,
+  marzo: 3,
+  abril: 4,
+  mayo: 5,
+  junio: 6,
+  julio: 7,
+  agosto: 8,
+  septiembre: 9,
+  octubre: 10,
+  noviembre: 11,
+  diciembre: 12,
+};
 ```
 
-**Características:**
+#### **Conversión de fechas:**
+
+```typescript
+// ISO → Slug
+createSlugFromDate('2025-12-16') → 'precio-luz-16-diciembre-2025'
+createSlugFromDate('2026-01-01') → 'precio-luz-1-enero-2026'
+
+// Slug → ISO
+parseSlugToDate('precio-luz-16-diciembre-2025') → '2025-12-16'
+parseSlugToDate('precio-luz-1-enero-2026') → '2026-01-01'
+```
 
 - ✅ Sin prefijo (más limpio para histórico)
 - ✅ Fecha en formato español (DD-MM-YYYY)
