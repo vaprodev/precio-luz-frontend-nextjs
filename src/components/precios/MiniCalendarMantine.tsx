@@ -2,7 +2,7 @@
 
 /**
  * MiniCalendarMantine - Componente de calendario adaptado de Legacy
- * Integra Mantine DatePicker con Zustand store y React Query prefetch
+ * Integra Mantine MiniCalendar (no DatePicker) con Zustand store y React Query prefetch
  *
  * Features:
  * - Prefetch automático de días cercanos a la fecha activa
@@ -10,11 +10,13 @@
  * - Excluye fechas sin datos (usando cache de react-query)
  * - Marca domingos en rojo
  * - Zona horaria: Europe/Madrid
+ * - Muestra numberOfDays días visibles
  */
 
 import React from 'react';
-import { DatePicker } from '@mantine/dates';
+import { MiniCalendar } from '@mantine/dates';
 import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import {
   ymdToZonedDayjs,
   dateToYmdInZone,
@@ -25,7 +27,7 @@ import {
 import { usePricesStore } from '@/hooks/usePricesStore';
 
 interface MiniCalendarMantineProps {
-  /** Número de días visibles en el calendario (no usado en DatePicker) */
+  /** Número de días visibles en el calendario */
   numberOfDays?: number;
   /** Si true, permite seleccionar hasta mañana. Si false, solo hasta hoy */
   tomorrowAvailable?: boolean;
@@ -37,7 +39,11 @@ interface MiniCalendarMantineProps {
  * MiniCalendarMantine Component
  * Calendario pequeño integrado con estado global (Zustand) y prefetch (React Query)
  */
-export default function MiniCalendarMantine({ tomorrowAvailable = false, fetchPricesFn }: MiniCalendarMantineProps) {
+export default function MiniCalendarMantine({
+  numberOfDays = 7,
+  tomorrowAvailable = false,
+  fetchPricesFn,
+}: MiniCalendarMantineProps) {
   // Estado global: activeDate como YYYY-MM-DD
   // IMPORTANTE: Usar selectores separados para evitar crear nuevo objeto en cada render
   const activeDate = usePricesStore((s) => s.activeDate);
@@ -52,6 +58,20 @@ export default function MiniCalendarMantine({ tomorrowAvailable = false, fetchPr
     const dayjsDate = ymdToZonedDayjs(activeDate);
     return dayjsDate ? dayjsDate.toDate() : null;
   }, [activeDate]);
+
+  /**
+   * Calculate interval start date ONCE on mount (not on activeDate changes)
+   * This ensures the calendar shows activeDate near the end only on initial load
+   */
+  const [intervalStartDate] = React.useState(() => {
+    const baseYmd = activeDate ?? getTodayMadridYmd();
+    // Calculate how many days to subtract so activeDate appears near the end
+    // For numberOfDays=7, subtract 5 to make activeDate the 6th day
+    const daysToSubtract = numberOfDays - 2;
+    const dayjsDate = ymdToZonedDayjs(baseYmd, SPAIN_TZ);
+    if (!dayjsDate) return new Date();
+    return dayjsDate.startOf('day').subtract(daysToSubtract, 'day').toDate();
+  });
 
   /**
    * Calcular maxDate según disponibilidad de mañana
@@ -98,37 +118,43 @@ export default function MiniCalendarMantine({ tomorrowAvailable = false, fetchPr
   }, [activeDate, fetchPricesFn, qc]);
 
   /**
-   * Construir lista de fechas excluidas (sin datos disponibles)
-   * NOTA: Deshabilitado por ahora para evitar bucles infinitos
-   * TODO: Implementar con estado separado cuando se necesite
+   * Build excludeDates from react-query cache: any day with no data should be disabled
    */
   const excludeDates = React.useMemo(() => {
-    return [];
-  }, []);
+    const excluded: Date[] = [];
+    const queries = qc.getQueryCache().getAll();
+
+    for (const q of queries) {
+      const key = q.queryKey;
+      if (!Array.isArray(key) || key[0] !== 'prices') continue;
+
+      const day = key[1] as string;
+      const state = q.state.data as any;
+
+      // If we have a cached payload and count is zero or data empty -> exclude
+      const hasCount = state && (state.count > 0 || (state.data && state.data.length > 0));
+      if (!hasCount) {
+        const d = ymdToZonedDayjs(day)?.toDate();
+        if (d) excluded.push(d);
+      }
+    }
+
+    return excluded.length ? excluded : undefined;
+  }, [qc]);
 
   /**
-   * Handler para cambio de fecha - Mantine v8 usa strings ISO (YYYY-MM-DD)
+   * Handler para cambio de fecha - Mantine v8 MiniCalendar usa strings ISO
    */
   const handleDateChange = React.useCallback(
-    (value: string | null) => {
-      if (!value) return;
-      // Mantine pasa la fecha como string YYYY-MM-DD ya en zona horaria correcta
-      setActiveDate(value);
+    (dateStr: string) => {
+      if (!dateStr) return;
+      setActiveDate(dateStr);
     },
     [setActiveDate],
   );
 
   /**
-   * Verificar si una fecha debe ser excluida - Mantine v8 pasa string
-   * NOTA: Siempre retorna false por ahora (excludeDates está vacío)
-   */
-  const shouldExcludeDate = React.useCallback((dateStr: string) => {
-    // Por ahora, no excluimos ninguna fecha
-    return false;
-  }, []);
-
-  /**
-   * getDayProps: customizar estilos por día - Domingos en rojo - Mantine v8 pasa string
+   * getDayProps: customizar estilos por día - Domingos en rojo - Mantine v8 pasa strings
    */
   const getDayProps = React.useCallback((dateStr: string) => {
     const date = new Date(dateStr);
@@ -151,20 +177,24 @@ export default function MiniCalendarMantine({ tomorrowAvailable = false, fetchPr
         valueDate,
         tomorrowAvailable,
         maxDate,
-        excludeDatesCount: excludeDates.length,
+        intervalStartDate,
+        numberOfDays,
+        excludeDatesCount: excludeDates?.length ?? 0,
       });
     }
-  }, [activeDate, valueDate, tomorrowAvailable, maxDate, excludeDates.length]);
+  }, [activeDate, valueDate, tomorrowAvailable, maxDate, intervalStartDate, numberOfDays, excludeDates]);
 
   return (
     <div className="mini-calendar-wrapper">
-      <DatePicker
+      <MiniCalendar
         value={valueDate}
         onChange={handleDateChange}
+        numberOfDays={numberOfDays}
+        defaultDate={intervalStartDate}
         maxDate={maxDate}
-        excludeDate={shouldExcludeDate}
         getDayProps={getDayProps}
-        firstDayOfWeek={1}
+        // excludeDates no está disponible en MiniCalendar v8
+        // Se usa getDayProps para deshabilitar fechas sin datos
       />
     </div>
   );
