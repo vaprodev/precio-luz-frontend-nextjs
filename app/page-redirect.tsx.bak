@@ -1,8 +1,0 @@
-import { redirect } from 'next/navigation';
-import { getTodaySlug } from '~/lib/precios/slug-utils';
-
-export default function HomePage() {
-  // Redirect to today's price page
-  const todaySlug = getTodaySlug();
-  redirect(`/${todaySlug}`);
-}
