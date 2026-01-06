@@ -10,7 +10,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^8.3.11",
+    "@mantine/dates": "^8.3.11",
+    "@mantine/hooks": "^8.3.11",
     "@tabler/icons-react": "^3.12.0",
+    "@tanstack/react-query": "^5.90.16",
     "dayjs": "^1.11.19",
     "gray-matter": "^4.0.3",
     "markdown-it": "^14.1.0",
@@ -20,7 +24,8 @@
     "react-dom": "^18.3.1",
     "recharts": "^3.6.0",
     "sharp": "^0.33.5",
-    "tailwind-merge": "^2.5.2"
+    "tailwind-merge": "^2.5.2",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.14",
