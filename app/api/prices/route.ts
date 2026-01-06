@@ -6,6 +6,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.precioluzho
 export const dynamic = 'force-dynamic';
 
 /**
+ * Normalize price items to €/kWh
+ * Some APIs may return €/MWh (values 80-200), convert to €/kWh
+ */
+function normalizeItemsToEurPerKwh(items: any[] = []): any[] {
+  return (items || []).map((it) => {
+    const v = it?.priceEurKwh;
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      // If value looks like €/MWh (e.g., 80..200), convert to €/kWh
+      const normalized = v > 10 ? v / 1000 : v;
+      return { ...it, priceEurKwh: normalized };
+    }
+    return it;
+  });
+}
+
+/**
  * API Route Proxy para evitar CORS en desarrollo
  *
  * Este endpoint actúa como proxy hacia la API real,
@@ -45,6 +61,11 @@ export async function GET(request: NextRequest) {
 
     // Obtener los datos
     const data = await response.json();
+
+    // Normalizar precios a €/kWh (convertir de €/MWh si es necesario)
+    if (data?.data && Array.isArray(data.data)) {
+      data.data = normalizeItemsToEurPerKwh(data.data);
+    }
 
     // Copiar headers importantes de la respuesta original
     const headers = new Headers();
