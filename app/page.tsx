@@ -9,10 +9,11 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePricesStore } from '@/hooks/usePricesStore';
 import { usePriceData } from '@/hooks/usePriceData';
+import { useTomorrowAvailability } from '@/hooks/useTomorrowAvailability';
 import MiniCalendarMantine from '@/components/precios/MiniCalendarMantine';
 import PriceChartView from '@/components/precios/price-chart/PriceChartView';
 import { fetchPricesByDateClient } from '~/lib/api/precios-api';
-import { getCurrentHourMadrid, isToday } from '~/lib/precios/date-utils';
+import { getCurrentHourMadrid, isToday, getTodayMadridYmd } from '~/lib/precios/date-utils';
 
 // Create QueryClient for React Query
 const queryClient = new QueryClient({
@@ -26,18 +27,20 @@ const queryClient = new QueryClient({
 
 function HomeContent() {
   const activeDate = usePricesStore((s) => s.activeDate);
-  const { data, loading, error, info, meta } = usePriceData(activeDate);
 
-  // Calculate if tomorrow is available based on completeness
-  const tomorrowAvailable = React.useMemo(() => {
-    return info?.isComplete === true;
-  }, [info]);
+  // Check tomorrow availability and set initial date
+  const { available: tomorrowAvailable, loading: checkingTomorrow } = useTomorrowAvailability();
 
+  // Use activeDate if available, otherwise fallback to today (should not happen after checkingTomorrow=false)
+  const effectiveDate = activeDate ?? getTodayMadridYmd();
+  const { data, loading, error, info, meta } = usePriceData(effectiveDate);
+
+  // IMPORTANT: All hooks must be called before any conditional returns
   // Calculate current hour index for highlighting (only if viewing today)
   const currentHourIndex = React.useMemo(() => {
-    if (!activeDate || !isToday(activeDate)) return null;
+    if (!effectiveDate || !isToday(effectiveDate)) return null;
     return getCurrentHourMadrid();
-  }, [activeDate]);
+  }, [effectiveDate]);
 
   // Calculate min/max for chart colors
   const { minPrice, maxPrice } = React.useMemo(() => {
@@ -47,6 +50,30 @@ function HomeContent() {
       maxPrice: meta.max ?? null,
     };
   }, [meta]);
+
+  // Show loading while checking tomorrow's availability
+  if (checkingTomorrow || !activeDate) {
+    return (
+      <main className="min-h-screen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="py-12 md:py-20">
+            <header className="mb-10 text-center">
+              <h1 className="mb-6 text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">Precio de la Luz Hoy</h1>
+              <p className="text-xl font-normal text-gray-600 dark:text-slate-400">
+                Consulta los precios por hora de la electricidad en España
+              </p>
+            </header>
+            <div className="flex h-64 items-center justify-center">
+              <div className="text-center">
+                <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary-600 mx-auto"></div>
+                <p className="text-lg text-gray-600 dark:text-gray-400">Comprobando la última fecha disponible…</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen">
@@ -74,7 +101,7 @@ function HomeContent() {
           <section>
             <div className="card p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Precios del {activeDate}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Precios del {effectiveDate}</h2>
 
                 {/* Completeness indicator */}
                 {info && (
@@ -107,7 +134,7 @@ function HomeContent() {
                     currentHourIndex={currentHourIndex}
                     min={minPrice}
                     max={maxPrice}
-                    activeDate={activeDate}
+                    activeDate={effectiveDate}
                   />
 
                   {/* Metadata info */}

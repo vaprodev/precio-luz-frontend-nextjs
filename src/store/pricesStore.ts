@@ -1,7 +1,8 @@
 /**
  * pricesStore.ts
  * Store global de Zustand para manejar el estado de la fecha activa en la aplicación
- * Inicializa en "hoy" en la zona horaria de Madrid (Europe/Madrid)
+ * NO inicializa automáticamente - espera a que useTomorrowAvailability decida
+ * la fecha inicial basándose en si mañana tiene datos completos
  */
 
 import { create } from 'zustand';
@@ -10,9 +11,10 @@ import { getTodayMadridYmd } from '@/lib/precios/date-utils';
 interface PricesState {
   /**
    * Fecha activa en formato YYYY-MM-DD (zona horaria de Madrid)
+   * null hasta que useTomorrowAvailability setee la fecha inicial
    * Ejemplo: "2025-01-06"
    */
-  activeDate: string;
+  activeDate: string | null;
 
   /**
    * Actualiza la fecha activa
@@ -27,8 +29,9 @@ interface PricesState {
 }
 
 export const usePricesStore = create<PricesState>((set) => ({
-  // Estado inicial: hoy en Madrid
-  activeDate: getTodayMadridYmd(),
+  // Estado inicial: null (será seteado por useTomorrowAvailability)
+  // NO inicializar aquí para evitar flash de "hoy" → "mañana"
+  activeDate: null,
 
   // Acción para cambiar la fecha
   setActiveDate: (newDate: string) => set({ activeDate: newDate }),
