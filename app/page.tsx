@@ -10,7 +10,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePricesStore } from '@/hooks/usePricesStore';
 import { usePriceData } from '@/hooks/usePriceData';
 import MiniCalendarMantine from '@/components/precios/MiniCalendarMantine';
+import PriceChartView from '@/components/precios/price-chart/PriceChartView';
 import { fetchPricesByDateClient } from '~/lib/api/precios-api';
+import { getCurrentHourMadrid, isToday } from '~/lib/precios/date-utils';
 
 // Create QueryClient for React Query
 const queryClient = new QueryClient({
@@ -24,12 +26,27 @@ const queryClient = new QueryClient({
 
 function HomeContent() {
   const activeDate = usePricesStore((s) => s.activeDate);
-  const { data, loading, error, info } = usePriceData(activeDate);
+  const { data, loading, error, info, meta } = usePriceData(activeDate);
 
   // Calculate if tomorrow is available based on completeness
   const tomorrowAvailable = React.useMemo(() => {
     return info?.isComplete === true;
   }, [info]);
+
+  // Calculate current hour index for highlighting (only if viewing today)
+  const currentHourIndex = React.useMemo(() => {
+    if (!activeDate || !isToday(activeDate)) return null;
+    return getCurrentHourMadrid();
+  }, [activeDate]);
+
+  // Calculate min/max for chart colors
+  const { minPrice, maxPrice } = React.useMemo(() => {
+    if (!meta) return { minPrice: null, maxPrice: null };
+    return {
+      minPrice: meta.min ?? null,
+      maxPrice: meta.max ?? null,
+    };
+  }, [meta]);
 
   return (
     <main className="min-h-screen">
@@ -84,21 +101,40 @@ function HomeContent() {
               {/* Data state */}
               {data && !loading && !error && (
                 <div className="space-y-4">
-                  <div className="text-gray-700 dark:text-gray-300">
-                    <p>
-                      Mostrando <strong>{data.data.length}</strong> horas de datos para <strong>{activeDate}</strong>
-                    </p>
-                  </div>
+                  {/* Price Chart */}
+                  <PriceChartView
+                    data={data.data}
+                    currentHourIndex={currentHourIndex}
+                    min={minPrice}
+                    max={maxPrice}
+                    activeDate={activeDate}
+                  />
 
-                  {/* Price chart would go here - integrate with existing chart component */}
-                  <div className="rounded bg-gray-50 p-4 dark:bg-gray-800">
-                    <p className="text-center text-gray-600 dark:text-gray-400">
-                      [Gráfico de precios - Integrar con componente existente]
-                    </p>
-                    <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-500">
-                      {data.data.length} precios cargados correctamente
-                    </p>
-                  </div>
+                  {/* Metadata info */}
+                  {meta && (
+                    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                        <div className="text-sm font-medium text-blue-900 dark:text-blue-100">Precio Mínimo</div>
+                        <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {meta.min?.toFixed(4)} €/kWh
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
+                        <div className="text-sm font-medium text-green-900 dark:text-green-100">Precio Medio</div>
+                        <div className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+                          {meta.mean?.toFixed(4)} €/kWh
+                        </div>
+                      </div>
+
+                      <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+                        <div className="text-sm font-medium text-red-900 dark:text-red-100">Precio Máximo</div>
+                        <div className="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">
+                          {meta.max?.toFixed(4)} €/kWh
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
