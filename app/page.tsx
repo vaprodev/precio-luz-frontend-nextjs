@@ -35,7 +35,6 @@ function HomeContent() {
   const effectiveDate = activeDate ?? getTodayMadridYmd();
   const { data, loading, error, info, meta } = usePriceData(effectiveDate);
 
-  // IMPORTANT: All hooks must be called before any conditional returns
   // Calculate current hour index for highlighting (only if viewing today)
   const currentHourIndex = React.useMemo(() => {
     if (!effectiveDate || !isToday(effectiveDate)) return null;

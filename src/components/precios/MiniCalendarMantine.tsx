@@ -91,31 +91,51 @@ export default function MiniCalendarMantine({
   }, [tomorrowAvailable]);
 
   /**
-   * Prefetch de precios para días cercanos a la fecha activa
+   * Prefetch de precios SOLO para días visibles en el calendario
+   * NO prefetchea fechas futuras más allá de maxDate
    */
   React.useEffect(() => {
-    if (!fetchPricesFn || !activeDate) return;
+    if (!fetchPricesFn) return;
 
-    const prefetchNearbyDays = async () => {
-      // Prefetch 7 días: 3 antes, el día actual, y 3 después
-      const baseDayjs = ymdToZonedDayjs(activeDate);
-      if (!baseDayjs) return;
+    const prefetchVisibleDays = async () => {
+      // Obtener fecha máxima permitida (hoy o mañana según disponibilidad)
+      const todayYmd = getTodayMadridYmd();
+      const maxDateYmd = tomorrowAvailable ? getTomorrowMadridYmd() : todayYmd;
 
-      for (let offset = -3; offset <= 3; offset++) {
-        const day = baseDayjs.add(offset, 'day').format('YYYY-MM-DD');
+      // Calcular intervalStartDate para saber qué días son visibles
+      const baseYmd = activeDate ?? todayYmd;
+      const daysToSubtract = numberOfDays - 2;
+      const startDayjs = ymdToZonedDayjs(baseYmd, SPAIN_TZ);
+      if (!startDayjs) return;
+
+      const intervalStart = startDayjs.subtract(daysToSubtract, 'day');
+      const maxDateDayjs = ymdToZonedDayjs(maxDateYmd, SPAIN_TZ);
+      if (!maxDateDayjs) return;
+
+      // Prefetch solo los días visibles (numberOfDays) que no excedan maxDate
+      for (let i = 0; i < numberOfDays; i++) {
+        const dayDayjs = intervalStart.add(i, 'day');
+
+        // NO prefetchear si la fecha es mayor que maxDate
+        if (dayDayjs.isAfter(maxDateDayjs, 'day')) {
+          console.debug(`[MiniCalendar] Skipping prefetch for ${dayDayjs.format('YYYY-MM-DD')} (after maxDate)`);
+          continue;
+        }
+
+        const day = dayDayjs.format('YYYY-MM-DD');
         try {
           await qc.prefetchQuery({
             queryKey: ['prices', day],
             queryFn: () => fetchPricesFn(day),
           });
         } catch (error) {
-          console.debug(`Prefetch failed for ${day}:`, error);
+          console.debug(`[MiniCalendar] Prefetch failed for ${day}:`, error);
         }
       }
     };
 
-    prefetchNearbyDays();
-  }, [activeDate, fetchPricesFn, qc]);
+    prefetchVisibleDays();
+  }, [activeDate, fetchPricesFn, qc, numberOfDays, tomorrowAvailable]);
 
   /**
    * Build excludeDates from react-query cache: any day with no data should be disabled

@@ -44,13 +44,14 @@ export async function GET(request: NextRequest) {
     console.log('[API Proxy] Fetching from:', apiUrl.toString());
 
     // Hacer petición a la API real
+    // NO especificamos 'cache' aquí para respetar los headers Cache-Control del backend:
+    // - Backend envía max-age=86400 para días pasados/completos (24h cache)
+    // - Backend envía max-age=5 para hoy/mañana incompletos (revalidación rápida)
     const response = await fetch(apiUrl.toString(), {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
-      // No cache para desarrollo, usar en producción si se desea
-      // cache: 'no-store',
     });
 
     // Verificar si la respuesta es exitosa
@@ -74,12 +75,17 @@ export async function GET(request: NextRequest) {
     // Copiar headers custom del backend si existen
     const xCompleteness = response.headers.get('X-Completeness');
     const xCachePolicy = response.headers.get('X-Cache-Policy');
+    const cacheControl = response.headers.get('Cache-Control');
 
     if (xCompleteness) {
       headers.set('X-Completeness', xCompleteness);
     }
     if (xCachePolicy) {
       headers.set('X-Cache-Policy', xCachePolicy);
+    }
+    // CRÍTICO: propagar Cache-Control del backend para que el browser/CDN cachee correctamente
+    if (cacheControl) {
+      headers.set('Cache-Control', cacheControl);
     }
 
     console.log('[API Proxy] Success:', { date, count: data.count });
