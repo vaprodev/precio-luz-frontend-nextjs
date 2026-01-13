@@ -15,6 +15,25 @@ import PriceChartView from '@/components/precios/price-chart/PriceChartView';
 import { fetchPricesByDateClient } from '~/lib/api/precios-api';
 import { getCurrentHourMadrid, isToday, getTodayMadridYmd } from '~/lib/precios/date-utils';
 
+// Template widgets
+import Hero from '~/components/widgets/Hero';
+import Features from '~/components/widgets/Features';
+import Content from '~/components/widgets/Content';
+import Steps from '~/components/widgets/Steps';
+import Testimonials from '~/components/widgets/Testimonials';
+import FAQs2 from '~/components/widgets/FAQs2';
+import CallToAction2 from '~/components/widgets/CallToAction2';
+import {
+  callToAction2Home,
+  contentHomeOne,
+  contentHomeTwo,
+  faqs2Home,
+  featuresHome,
+  heroHome,
+  stepsHome,
+  testimonialsHome,
+} from '~/shared/data/pages/home.data';
+
 // Create QueryClient for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -165,6 +184,16 @@ function HomeContent() {
               )}
             </div>
           </section>
+
+          {/* Template Widgets */}
+          <Hero {...heroHome} />
+          <Features {...featuresHome} />
+          <Content {...contentHomeOne} />
+          <Content {...contentHomeTwo} />
+          <Steps {...stepsHome} />
+          <Testimonials {...testimonialsHome} />
+          <FAQs2 {...faqs2Home} />
+          <CallToAction2 {...callToAction2Home} />
         </div>
       </div>
     </main>

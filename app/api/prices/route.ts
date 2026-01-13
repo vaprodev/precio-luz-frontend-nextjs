@@ -44,14 +44,15 @@ export async function GET(request: NextRequest) {
     console.log('[API Proxy] Fetching from:', apiUrl.toString());
 
     // Hacer petición a la API real
-    // NO especificamos 'cache' aquí para respetar los headers Cache-Control del backend:
-    // - Backend envía max-age=86400 para días pasados/completos (24h cache)
-    // - Backend envía max-age=5 para hoy/mañana incompletos (revalidación rápida)
+    // En desarrollo, usamos no-store para evitar cache de Next.js y ver cambios inmediatamente
+    // En producción, respetamos los headers Cache-Control del backend
+    const isDev = process.env.NODE_ENV === 'development';
     const response = await fetch(apiUrl.toString(), {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
+      ...(isDev && { cache: 'no-store' }),
     });
 
     // Verificar si la respuesta es exitosa
