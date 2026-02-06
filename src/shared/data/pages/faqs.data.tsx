@@ -32,8 +32,9 @@ export const faqs4Faqs: FAQsProps = {
       },
       items: [
         {
-          title: 'What do I need to start?',
-          description: `Nunc mollis tempor quam, non fringilla elit sagittis in. Nullam vitae consectetur mi, a elementum arcu. Sed laoreet, ipsum et vehicula dignissim, leo orci pretium sem, ac condimentum tellus est quis ligula.`,
+          title: '¿Cómo está la luz hoy en España?',
+          description: `El precio de la luz hoy en España varía cada hora en función del mercado mayorista y del sistema regulado PVPC. Si te preguntas a cómo está la luz hoy, a qué precio está la luz hoy o cuál es el coste de la luz hoy, en esta página puedes consultarlo de forma clara y actualizada. El gráfico horario muestra el precio del kilovatio hora (kWh) para cada tramo del día, expresado en €/kWh, permitiéndote ver de un vistazo cómo evoluciona la electricidad hoy y detectar los momentos más económicos para consumir energía.
+`,
         },
         {
           title: 'How to install the NextJS + Tailwind CSS template?',

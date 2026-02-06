@@ -42,7 +42,7 @@ import gasImg from '~/assets/images/gas.jpg';
 export const heroHome: HeroProps = {
   title: (
     <>
-      Free template for <span className="hidden md:inline">starts a website using</span> <span>Next.js</span> +{' '}
+      Empieza el seoo <span className="hidden md:inline">empieza el SEO</span> <span>Next.js</span> +{' '}
       <span className="sm:whitespace-nowrap">Tailwind CSS</span>
     </>
   ),
@@ -114,7 +114,7 @@ export const featuresHome: FeaturesProps = {
       </>
     ),
     subtitle:
-      "Elevating Your Digital Presence: Discover the Synergies Unleashed in Our Platform's Core Strengths, from Seamless Integration to Open Collaboration.",
+      "Elevating Your Digital Presence: Discover the   Unleashed in Our Platform's Core Strengths, from Seamless Integration to Open Collaboration.",
     tagline: 'Features',
   },
   items: [
@@ -367,35 +367,31 @@ export const faqs2Home: FAQsProps = {
   id: 'faqsTwo-on-home',
   hasBackground: false,
   header: {
-    title: 'Frequently Asked Questions',
-    subtitle:
-      'Duis turpis dui, fringilla mattis sem nec, fringilla euismod neque. Morbi tincidunt lacus nec tortor scelerisque pulvinar.',
+    title: 'Preguntas Frecuentes',
     tagline: 'FAQS',
   },
   items: [
     {
-      title: 'What do I need to start?',
-      description: `Nunc mollis tempor quam, non fringilla elit sagittis in. Nullam vitae consectetur mi, a elementum arcu. Sed laoreet, ipsum et vehicula dignissim, leo orci pretium sem, ac condimentum tellus est quis ligula.`,
+      title: '¿Cómo está la luz hoy en España?',
+      description: `El precio de la luz hoy en España varía cada hora en función del mercado mayorista y del sistema regulado PVPC. Si te preguntas a cómo está la luz hoy, a qué precio está la luz hoy o cuál es el coste de la luz hoy, en esta página puedes consultarlo de forma clara y actualizada. El gráfico horario muestra el precio del kilovatio hora (kWh) para cada tramo del día, expresado en €/kWh, permitiéndote ver de un vistazo cómo evoluciona la electricidad hoy y detectar los momentos más económicos para consumir energía.
+`,
     },
     {
-      title: 'How to install the NextJS + Tailwind CSS template?',
-      description: `Interdum et malesuada fames ac ante ipsum primis in faucibus. Integer eleifend vestibulum nisl in iaculis. Mauris dictum ac purus vestibulum auctor. Praesent imperdiet lectus et massa faucibus, quis viverra massa rhoncus.`,
+      title: '¿A qué hora está la luz más barata hoy?',
+      description: `Una de las búsquedas más habituales es a qué hora es la luz más barata hoy. La respuesta depende del día concreto, ya que el precio cambia diariamente en función de la oferta y la demanda.
+En general, la hora más barata de luz hoy suele concentrarse en la hora valle, normalmente durante la madrugada o primeras horas de la mañana. En el gráfico de esta página puedes identificar fácilmente a qué hora está hoy la luz más barata, comparando los precios hora a hora.
+Si necesitas saber a qué hora será la luz más barata hoy, el gráfico y la tabla de precios te ofrecen el dato exacto para planificar lavadoras, lavavajillas o carga de vehículos eléctricos.
+`,
     },
     {
-      title: "What's something that you completely don't understand?",
-      description: `Mauris vitae eros a dui varius luctus. Suspendisse rutrum, sapien nec blandit bibendum, justo sapien sollicitudin erat, id aliquam sapien purus quis leo. Aliquam vulputate vestibulum consectetur.`,
+      title: 'Precio del kWh hoy y coste de la electricidad',
+      description: `El precio del kWh hoy (precio kilovatio hora hoy, precio kWh hoy o precio kw hoy) es la referencia clave para calcular cuánto pagarás por tu consumo eléctrico. Este valor procede del mercado regulado y se publica oficialmente a través de ESIOS (PVPC)`,
     },
     {
-      title: "What's an example of when you changed your mind?",
-      description: `Nunc dapibus lacinia ipsum ut elementum. Integer in pretium sapien. Ut pretium nisl mauris, ut rutrum justo condimentum id. Etiam aliquet, arcu at iaculis laoreet, est arcu egestas sapien, eget sollicitudin odio orci et nunc.`,
-    },
-    {
-      title: 'What is something that you would really like to try again?',
-      description: `Duis in maximus mauris, id eleifend mauris. Nam a fringilla arcu. Curabitur convallis, tellus non aliquet rhoncus, lacus massa auctor eros, in interdum lectus augue sed augue. Fusce tempor ex id faucibus efficitur.`,
-    },
-    {
-      title: 'If you could only ask one question to each person you meet, what would that question be?',
-      description: `Nullam imperdiet sapien tincidunt erat dapibus faucibus. Vestibulum a sem nec lorem imperdiet scelerisque non sed lacus. Ut pulvinar id diam vitae auctor. Nam tempus, neque et elementum consectetur, ex ipsum pulvinar risus, vel sodales ligula tortor eu eros.`,
+      title: 'Consulta el precio de la luz por fecha y planifica tu consumo',
+      description: `Si quieres saber cómo estuvo la luz ayer, cómo estará mañana o comparar distintos días, utiliza el selector de fecha disponible en la página. Esto te permite analizar el precio de la luz hoy y otros días, detectar patrones y elegir siempre la hora más barata de luz.
+Planificar tu consumo según el precio kWh España es una de las formas más eficaces de reducir tu factura eléctrica sin cambiar de tarifa.
+`,
     },
   ],
 };

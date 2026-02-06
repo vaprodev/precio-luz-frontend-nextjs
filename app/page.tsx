@@ -76,7 +76,9 @@ function HomeContent() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="py-12 md:py-20">
             <header className="mb-10 text-center">
-              <h1 className="mb-6 text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">Precio de la Luz Hoy</h1>
+              <h1 className="mb-6 text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">
+                ¿Cuál es el Precio de la Luz Hoy?
+              </h1>
               <p className="text-xl font-normal text-gray-600 dark:text-slate-400">
                 Consulta los precios por hora de la electricidad en España
               </p>
@@ -99,27 +101,28 @@ function HomeContent() {
         <div className="py-12 md:py-20">
           {/* Header */}
           <header className="mb-10 text-center">
-            <h1 className="mb-6 text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">Precio de la Luz Hoy</h1>
+            <h1 className="mb-6 text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">
+              ¿Cuál es el Precio de la Luz Hoy?
+            </h1>
             <p className="text-xl font-normal text-gray-600 dark:text-slate-400">
-              Consulta los precios por hora de la electricidad en España
+              Desliza para ver las Horas de Luz más Baratas
             </p>
           </header>
-
           {/* MiniCalendar Navigation */}
           <section className="mb-8">
             <div className="card p-6">
-              <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Selecciona una fecha</h2>
               <div className="flex justify-center">
                 <MiniCalendarMantine tomorrowAvailable={tomorrowAvailable} fetchPricesFn={fetchPricesByDateClient} />
               </div>
             </div>
           </section>
-
           {/* Price Chart Section */}
           <section>
             <div className="card p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Precios del {effectiveDate}</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Gráfico con las tarifas de luz por horas del {effectiveDate}
+                </h2>
 
                 {/* Completeness indicator */}
                 {info && (
@@ -184,16 +187,18 @@ function HomeContent() {
               )}
             </div>
           </section>
-
           {/* Template Widgets */}
+          <FAQs2 {...faqs2Home} />
+          {/*
           <Hero {...heroHome} />
           <Features {...featuresHome} />
           <Content {...contentHomeOne} />
           <Content {...contentHomeTwo} />
           <Steps {...stepsHome} />
           <Testimonials {...testimonialsHome} />
-          <FAQs2 {...faqs2Home} />
+          
           <CallToAction2 {...callToAction2Home} />
+          */}
         </div>
       </div>
     </main>
